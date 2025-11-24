@@ -28,6 +28,8 @@ class SinterBpOsdDecoder(sinter.Decoder):
         The OSD method used. Must be one of {'OSD_0', 'OSD_E', 'OSD_CS'}, by default 'OSD_0'.
     osd_order : int, optional
         The OSD order, by default 0.
+    decomposed_hyperedges : Optional[bool], optional
+        Whether to use decomposed hyperedges in the decoding process, by default None.
 
     Notes
     -----
@@ -44,6 +46,7 @@ class SinterBpOsdDecoder(sinter.Decoder):
         serial_schedule_order=None,
         osd_method="osd0",
         osd_order=0,
+        decomposed_hyperedges: bool = True,
     ):
 
         self.max_iter = max_iter
@@ -54,6 +57,7 @@ class SinterBpOsdDecoder(sinter.Decoder):
         self.serial_schedule_order = serial_schedule_order
         self.osd_method = osd_method
         self.osd_order = osd_order
+        self.decomposed_hyperedges = decomposed_hyperedges
 
     def decode_via_files(
         self,
@@ -96,7 +100,7 @@ class SinterBpOsdDecoder(sinter.Decoder):
                 via sinter deleting this directory after killing the decoder.
         """
         self.dem = stim.DetectorErrorModel.from_file(dem_path)
-        self.matrices = detector_error_model_to_check_matrices(self.dem)
+        self.matrices = detector_error_model_to_check_matrices(self.dem, allow_undecomposed_hyperedges=self.decomposed_hyperedges)
         self.bposd = BpOsdDecoder(
             self.matrices.check_matrix,
             error_channel=list(self.matrices.priors),

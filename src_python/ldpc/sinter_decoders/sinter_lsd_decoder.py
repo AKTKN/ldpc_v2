@@ -27,6 +27,8 @@ class SinterLsdDecoder(sinter.Decoder):
         A list of integers that specify the serial schedule order. Must be of length equal to the block length of the code, by default None.
     lsd_order : int, optional
         The LSD order, by default 0.
+    decomposed_hyperedges: Optional[bool], optional
+        Whether to use decomposed hyperedges in the decoding process, by default None.
 
     Notes
     -----
@@ -42,6 +44,7 @@ class SinterLsdDecoder(sinter.Decoder):
         omp_thread_count=1,
         serial_schedule_order=None,
         lsd_order=0,
+        decomposed_hyperedges: bool = True,
     ):
         self.max_iter = max_iter
         self.bp_method = bp_method
@@ -50,6 +53,7 @@ class SinterLsdDecoder(sinter.Decoder):
         self.omp_thread_count = omp_thread_count
         self.serial_schedule_order = serial_schedule_order
         self.lsd_order = lsd_order
+        self.decomposed_hyperedges = decomposed_hyperedges
 
     def decode_via_files(
         self,
@@ -92,7 +96,7 @@ class SinterLsdDecoder(sinter.Decoder):
                 via sinter deleting this directory after killing the decoder.
         """
         self.dem = stim.DetectorErrorModel.from_file(dem_path)
-        self.matrices = detector_error_model_to_check_matrices(self.dem)
+        self.matrices = detector_error_model_to_check_matrices(self.dem, allow_undecomposed_hyperedges=self.decomposed_hyperedges)
         self.lsd = BpLsdDecoder(
             self.matrices.check_matrix,
             error_channel=list(self.matrices.priors),
